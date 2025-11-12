@@ -79,8 +79,10 @@ const Contact = () => {
                     <Phone className="h-5 w-5 text-primary mt-1" />
                     <div>
                       <p className="font-medium">Phone</p>
-                      <p className="text-sm text-muted-foreground">1-800-RECYCLE</p>
-                      <p className="text-sm text-muted-foreground">(1-800-732-9253)</p>
+                      <p className="text-sm text-muted-foreground">Vijaykumar: +91 6363325638</p>
+                      <p className="text-sm text-muted-foreground">Chandan: +91 9686133711</p>
+                      <p className="text-sm text-muted-foreground">Lekhan: +91 7019732659</p>
+                      <p className="text-sm text-muted-foreground">Veenashree: +91 8217702676</p>
                     </div>
                   </div>
                   
@@ -88,8 +90,7 @@ const Contact = () => {
                     <Mail className="h-5 w-5 text-primary mt-1" />
                     <div>
                       <p className="font-medium">Email</p>
-                      <p className="text-sm text-muted-foreground">support@trash2treasure.com</p>
-                      <p className="text-sm text-muted-foreground">sales@trash2treasure.com</p>
+                      <p className="text-sm text-muted-foreground">Vijaykumarrathod741@gmail.com</p>
                     </div>
                   </div>
                   
@@ -97,8 +98,8 @@ const Contact = () => {
                     <MapPin className="h-5 w-5 text-primary mt-1" />
                     <div>
                       <p className="font-medium">Address</p>
-                      <p className="text-sm text-muted-foreground">123 Green Street</p>
-                      <p className="text-sm text-muted-foreground">Eco City, EC 12345</p>
+                      <p className="text-sm text-muted-foreground">GSKSJTI College</p>
+                      <p className="text-sm text-muted-foreground">KR Circle, Bengaluru - 560001</p>
                     </div>
                   </div>
                 </div>
