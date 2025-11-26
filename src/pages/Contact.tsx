@@ -81,7 +81,7 @@ const Contact = () => {
                       <p className="font-medium">Phone</p>
                       <p className="text-sm text-muted-foreground">Vijaykumar: +91 6363325638</p>
                       <p className="text-sm text-muted-foreground">Chandan: +91 9686133711</p>
-                      <p className="text-sm text-muted-foreground">Lekhan: +91 7019732659</p>
+                      <p className="text-sm text-muted-foreground">Lekhana: +91 7019732659</p>
                       <p className="text-sm text-muted-foreground">Veenashree: +91 8217702676</p>
                     </div>
                   </div>
