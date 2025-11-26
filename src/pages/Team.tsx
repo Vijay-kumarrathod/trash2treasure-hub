@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import TeamCard from "@/components/TeamCard";
 import vijayImage from "@/assets/team-vijay.jpg";
 import chandanImage from "@/assets/team-chandan.jpg";
-import lekhanImage from "@/assets/team-lekhan.jpg";
+import lekhanImage from "@/assets/team-lekhana.jpg";
 import veenashreeImage from "@/assets/team-veenashree.jpg";
 
 const Team = () => {
@@ -23,7 +23,7 @@ const Team = () => {
       technologies: ["Node.js", "Express", "PostgreSQL", "MongoDB"]
     },
     {
-      name: "Lekhan",
+      name: "Lekhana",
       role: "Database & API Specialist",
       description: "Designs efficient database schemas and implements robust API architectures.",
       image: lekhanImage,
