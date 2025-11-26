@@ -17,8 +17,8 @@ const Browse = () => {
     {
       id: 1,
       image: phoneImage,
-      title: "Refurbished iPhone 12 Pro",
-      price: 599,
+      title: "Refurbished iPhone 17 Pro",
+      price: "₹1,74,900",
       condition: "Excellent",
       category: "Phones"
     },
@@ -26,7 +26,7 @@ const Browse = () => {
       id: 2,
       image: laptopImage,
       title: "MacBook Air M1 Refurbished",
-      price: 849,
+      price: "₹93,900",
       condition: "Like New",
       category: "Laptops"
     },
@@ -34,7 +34,7 @@ const Browse = () => {
       id: 3,
       image: fridgeImage,
       title: "Samsung Smart Refrigerator",
-      price: 799,
+      price: "25490",
       condition: "Good",
       category: "Appliances"
     },
@@ -42,7 +42,7 @@ const Browse = () => {
       id: 4,
       image: phoneImage,
       title: "Samsung Galaxy S21 Refurb",
-      price: 449,
+      price: "25,400",
       condition: "Excellent",
       category: "Phones"
     },
@@ -50,7 +50,7 @@ const Browse = () => {
       id: 5,
       image: laptopImage,
       title: "Dell XPS 13 Refurbished",
-      price: 699,
+      price: "35600",
       condition: "Good",
       category: "Laptops"
     },
@@ -58,7 +58,7 @@ const Browse = () => {
       id: 6,
       image: fridgeImage,
       title: "LG Smart Washer",
-      price: 499,
+      price: "19,999",
       condition: "Excellent",
       category: "Appliances"
     },
