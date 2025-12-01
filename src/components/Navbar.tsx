@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { Recycle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const Navbar = () => {
   return (
@@ -58,10 +59,44 @@ const Navbar = () => {
             >
               Contact
             </NavLink>
+            <AuthButton />
           </div>
         </div>
       </div>
     </nav>
+  );
+};
+
+const AuthButton = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<{ name?: string; contact?: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      if (raw) setUser(JSON.parse(raw));
+      else setUser(null);
+    } catch (e) {
+      setUser(null);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    try { localStorage.removeItem("user"); } catch (e) {}
+    setUser(null);
+    navigate("/");
+  };
+
+  if (user) {
+    return (
+      <button className="text-sm text-foreground hover:text-primary" onClick={handleLogout} title="Logout">
+        Logout ({user.name || "Seller"})
+      </button>
+    );
+  }
+
+  return (
+    <Link to="/login" className="text-sm text-foreground hover:text-primary">Login</Link>
   );
 };
 

@@ -10,6 +10,8 @@ import Help from "./pages/Help";
 import Team from "./pages/Team";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import ProductDetail from "./pages/ProductDetail";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +25,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/browse" element={<Browse />} />
           <Route path="/sell" element={<Sell />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/help" element={<Help />} />
           <Route path="/team" element={<Team />} />
           <Route path="/contact" element={<Contact />} />

@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 interface ProductCardProps {
   image: string;
@@ -8,9 +9,12 @@ interface ProductCardProps {
   price: number;
   condition: string;
   category: string;
+  description?: string;
+  id?: string | number;
 }
 
-const ProductCard = ({ image, title, price, condition, category }: ProductCardProps) => {
+const ProductCard = ({ image, title, price, condition, category, description, id }: ProductCardProps) => {
+  const navigate = useNavigate();
   return (
     <Card className="overflow-hidden hover:shadow-glow transition-all duration-300 group">
       <div className="aspect-square overflow-hidden bg-muted">
@@ -26,9 +30,10 @@ const ProductCard = ({ image, title, price, condition, category }: ProductCardPr
           <Badge variant="outline" className="text-xs border-primary text-primary">{condition}</Badge>
         </div>
         <h3 className="font-semibold line-clamp-2">{title}</h3>
+        {description && <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>}
         <div className="flex items-center justify-between">
           <span className="text-2xl font-bold text-primary">₹{price}</span>
-          <Button variant="default" size="sm">View Details</Button>
+          <Button variant="default" size="sm" onClick={() => navigate(`/product/${id}`)}>View Details</Button>
         </div>
       </div>
     </Card>

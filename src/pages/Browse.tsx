@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
@@ -12,57 +12,105 @@ import fridgeImage from "@/assets/product-fridge.jpg";
 
 const Browse = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  
-  const products = [
+  const [products, setProducts] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  // default static products used as fallback
+  const defaultProducts = [
     {
-      id: 1,
-      image: phoneImage,
+      id: 101,
+      images: [phoneImage],
       title: "Refurbished iPhone 17 Pro",
-      price: "₹1,74,900",
+      price: 174900,
       condition: "Excellent",
-      category: "Phones"
+      category: "phones",
+      description: "A carefully refurbished iPhone with warranty."
     },
     {
-      id: 2,
-      image: laptopImage,
-      title: "MacBook Air M1 Refurbished",
-      price: "₹93,900",
-      condition: "Like New",
-      category: "Laptops"
-    },
-    {
-      id: 3,
-      image: fridgeImage,
-      title: "Samsung Smart Refrigerator",
-      price: "25490",
-      condition: "Good",
-      category: "Appliances"
-    },
-    {
-      id: 4,
-      image: phoneImage,
+      id: 102,
+      images: [phoneImage],
       title: "Samsung Galaxy S21 Refurb",
-      price: "25,400",
+      price: 25400,
       condition: "Excellent",
-      category: "Phones"
+      category: "phones",
+      description: "Well-maintained Samsung phone, recent battery replacement."
     },
     {
-      id: 5,
-      image: laptopImage,
+      id: 201,
+      images: [laptopImage],
+      title: "MacBook Air M1 Refurbished",
+      price: 93900,
+      condition: "Like New",
+      category: "laptops",
+      description: "Lightly used MacBook Air with M1 chip."
+    },
+    {
+      id: 202,
+      images: [laptopImage],
       title: "Dell XPS 13 Refurbished",
-      price: "35600",
+      price: 35600,
       condition: "Good",
-      category: "Laptops"
+      category: "laptops",
+      description: "Dell XPS 13 with solid performance and good battery life."
     },
     {
-      id: 6,
-      image: fridgeImage,
+      id: 301,
+      images: [fridgeImage],
+      title: "Samsung Smart Refrigerator",
+      price: 25490,
+      condition: "Good",
+      category: "appliances",
+      description: "Smart fridge in working condition."
+    },
+    {
+      id: 302,
+      images: [fridgeImage],
       title: "LG Smart Washer",
-      price: "19,999",
+      price: 19999,
       condition: "Excellent",
-      category: "Appliances"
+      category: "appliances",
+      description: "Efficient washer with multiple washing modes."
     },
   ];
+
+  useEffect(() => {
+    const fetchOrLoad = async () => {
+      // try server first
+      try {
+        const res = await fetch("http://localhost:5000/items");
+        if (res.ok) {
+          const json = await res.json();
+          const items = (json.items || []).map((it: any) => ({ ...it }));
+          if (items.length) {
+            setProducts(items);
+            try { localStorage.setItem("items", JSON.stringify(items)); } catch(e) {}
+            return;
+          }
+        }
+      } catch (err) {
+        // ignore network errors, fallback to localStorage or defaults
+      }
+
+      // try localStorage
+      try {
+        const raw = localStorage.getItem("items");
+        if (raw) {
+          const items = JSON.parse(raw);
+          if (Array.isArray(items) && items.length) {
+            setProducts(items);
+            return;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      // final fallback to defaults
+      setProducts(defaultProducts);
+      try { localStorage.setItem("items", JSON.stringify(defaultProducts)); } catch(e) {}
+    };
+    fetchOrLoad();
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -79,16 +127,18 @@ const Browse = () => {
                 <label className="text-sm font-medium mb-2 block">Search</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input 
-                    placeholder="Search products..." 
-                    className="pl-10"
-                  />
+                    <Input 
+                      placeholder="Search products..." 
+                      className="pl-10"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
               </div>
               
               <div>
                 <label className="text-sm font-medium mb-2 block">Category</label>
-                <Select defaultValue="all">
+                <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -97,6 +147,7 @@ const Browse = () => {
                     <SelectItem value="phones">Phones</SelectItem>
                     <SelectItem value="laptops">Laptops</SelectItem>
                     <SelectItem value="appliances">Appliances</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -125,8 +176,35 @@ const Browse = () => {
 
           {/* Products Grid */}
           <div className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
-            {products.map((product) => (
-              <ProductCard key={product.id} {...product} />
+            {products
+              .filter((product) => {
+                // category filter
+                if (selectedCategory && selectedCategory !== "all") {
+                  if (!product.category) return false;
+                  if (String(product.category).toLowerCase() !== String(selectedCategory).toLowerCase()) return false;
+                }
+
+                // search filter (title or description)
+                if (searchTerm) {
+                  const q = searchTerm.toLowerCase();
+                  const inTitle = String(product.title || "").toLowerCase().includes(q);
+                  const inDesc = String(product.description || "").toLowerCase().includes(q);
+                  return inTitle || inDesc;
+                }
+
+                return true;
+              })
+              .map((product) => (
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                image={product.images?.[0] ?? phoneImage}
+                title={product.title}
+                price={Number(product.price) || 0}
+                condition={product.condition}
+                category={product.category}
+                description={product.description}
+              />
             ))}
           </div>
         </div>

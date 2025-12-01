@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -8,30 +8,136 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { MessageCircle, Phone, Mail, FileQuestion, Send } from "lucide-react";
 
 const Help = () => {
-  const [messages, setMessages] = useState([
-    { id: 1, text: "Hello! How can I help you today?", sender: "support" }
-  ]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      const raw = localStorage.getItem("help.chat.history");
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return [{ id: 1, text: "Hello! How can I help you today?", sender: "support" }];
+  });
   const [inputMessage, setInputMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
 
-  const handleSendMessage = () => {
-    if (inputMessage.trim()) {
-      setMessages([...messages, { 
-        id: messages.length + 1, 
-        text: inputMessage, 
-        sender: "user" 
-      }]);
-      setInputMessage("");
-      
-      // Simulate response
-      setTimeout(() => {
-        setMessages(prev => [...prev, { 
-          id: prev.length + 1, 
-          text: "Thank you for your message. Our support team will assist you shortly.", 
-          sender: "support" 
-        }]);
-      }, 1000);
+  const [sessionId, setSessionId] = useState(() => {
+    try {
+      const stored = localStorage.getItem('help.sessionId');
+      if (stored) return stored;
+      const gen = `s-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+      localStorage.setItem('help.sessionId', gen);
+      return gen;
+    } catch (e) {
+      return `s-${Date.now()}`;
     }
+  });
+
+  const presets = [
+    { id: 'phonepe', label: 'PhonePe / UPI payment failed', text: 'My PhonePe payment failed but money was debited. How do I get refund or retry the payment?' },
+    { id: 'refund', label: 'Order refund status', text: 'I requested a refund. How long will it take and what are the next steps?' },
+    { id: 'sell', label: 'How to sell an item', text: 'How do I list an item for sale and what are the tips to get it sold faster?' },
+    { id: 'contact', label: 'Contact owner', text: 'I want to contact the owner about a listing. Provide the best way to contact them.' },
+  ];
+
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || isTyping) return;
+    const userMsg = { id: messages.length + 1, text: inputMessage, sender: "user" };
+    const next = [...messages, userMsg];
+    setMessages(next);
+    setInputMessage("");
+    setIsTyping(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: next, userId: sessionId }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const bot = { id: next.length + 1, text: json.reply || "", sender: "support" };
+        const updated = [...next, bot];
+        setMessages(updated);
+        try { localStorage.setItem("help.chat.history", JSON.stringify(updated)); } catch (e) {}
+        return;
+      }
+    } catch (e) {
+      console.error("Chat fetch failed", e);
+    } finally {
+      // if fetch failed or succeeded, ensure typing state cleared later
+      setIsTyping(false);
+    }
+
+    // Fallback canned response
+    const fallback = { id: next.length + 1, text: `Thank you for your message. Our support team will assist you shortly. If you need immediate help, you can call +91 6363325638 or email Vijaykumarrathod741@gmail.com`, sender: "support" };
+    const final = [...next, fallback];
+    setMessages(final);
+    try { localStorage.setItem("help.chat.history", JSON.stringify(final)); } catch (e) {}
+    setIsTyping(false);
   };
+
+  // Load session from server on first render
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/chat/session/${sessionId}`);
+        if (res.ok) {
+          const json = await res.json();
+          const srv = json.messages || [];
+          if (Array.isArray(srv) && srv.length) {
+            const mapped = srv.map((m: any, i: number) => ({ id: i + 1, sender: m.role === 'assistant' ? 'support' : 'user', text: m.content }));
+            setMessages(mapped);
+            try { localStorage.setItem('help.chat.history', JSON.stringify(mapped)); } catch (e) {}
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    loadSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
+
+  // Send a preset prompt as a user message (builds OpenAI-format message list)
+  const sendPreset = async (presetText: string) => {
+    if (isTyping) return;
+    const userMsg = { id: messages.length + 1, text: presetText, sender: 'user' };
+    const next = [...messages, userMsg];
+    setMessages(next);
+    setIsTyping(true);
+
+    // build OpenAI messages from conversation (map sender -> role)
+    const apiMessages = next.map((m: any) => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text }));
+
+    try {
+      const res = await fetch('http://localhost:5000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: apiMessages, userId: sessionId }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const bot = { id: next.length + 1, text: json.reply || '', sender: 'support' };
+        const updated = [...next, bot];
+        setMessages(updated);
+        try { localStorage.setItem('help.chat.history', JSON.stringify(updated)); } catch (e) {}
+        return;
+      }
+    } catch (e) {
+      console.error('Preset chat fetch failed', e);
+    } finally {
+      setIsTyping(false);
+    }
+
+    // fallback
+    const fallback = { id: next.length + 1, text: `Thank you. For immediate help call +91 6363325638 or email Vijaykumarrathod741@gmail.com`, sender: 'support' };
+    const final = [...next, fallback];
+    setMessages(final);
+    try { localStorage.setItem('help.chat.history', JSON.stringify(final)); } catch (e) {}
+    setIsTyping(false);
+  };
+
+  // Persist messages whenever they change
+  useEffect(() => {
+    try { localStorage.setItem("help.chat.history", JSON.stringify(messages)); } catch (e) {}
+  }, [messages]);
 
   return (
     <div className="min-h-screen">
@@ -74,6 +180,11 @@ const Help = () => {
                       </div>
                     </div>
                   ))}
+                  {isTyping && (
+                    <div className="mb-4 flex justify-start">
+                      <div className="max-w-xs px-4 py-2 rounded-lg bg-card border text-muted-foreground">Typing...</div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="p-4 border-t flex gap-2">
@@ -83,7 +194,7 @@ const Help = () => {
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                   />
-                  <Button onClick={handleSendMessage}>
+                  <Button onClick={handleSendMessage} disabled={isTyping || !inputMessage.trim()}>
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
@@ -124,14 +235,46 @@ const Help = () => {
               <Card className="p-6 shadow-card">
                 <h3 className="font-semibold mb-4">Quick Support</h3>
                 <div className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    <Phone className="h-4 w-4 mr-2" />
-                    Call Us: 1-800-RECYCLE
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    <Mail className="h-4 w-4 mr-2" />
-                    Email Support
-                  </Button>
+                  <div className="grid grid-cols-1 gap-2">
+                    <a href="tel:+916363325638" className="block">
+                      <Button variant="outline" className="w-full justify-start" size="sm">
+                        <Phone className="h-4 w-4 mr-2" />
+                        Call Vijaykumar: +91 6363325638
+                      </Button>
+                    </a>
+                    <a href="tel:+919686133711" className="block">
+                      <Button variant="outline" className="w-full justify-start" size="sm">
+                        <Phone className="h-4 w-4 mr-2" />
+                        Call Chandan: +91 9686133711
+                      </Button>
+                    </a>
+                    <a href="tel:+917019732659" className="block">
+                      <Button variant="outline" className="w-full justify-start" size="sm">
+                        <Phone className="h-4 w-4 mr-2" />
+                        Call Lekhana: +91 7019732659
+                      </Button>
+                    </a>
+                    <a href="tel:+918217702676" className="block">
+                      <Button variant="outline" className="w-full justify-start" size="sm">
+                        <Phone className="h-4 w-4 mr-2" />
+                        Call Veenashree: +91 8217702676
+                      </Button>
+                    </a>
+                    <a href={`mailto:Vijaykumarrathod741@gmail.com?subject=${encodeURIComponent("Support request from Trash2Treasure")}`} className="block">
+                      <Button variant="outline" className="w-full justify-start" size="sm">
+                        <Mail className="h-4 w-4 mr-2" />
+                        Email: Vijaykumarrathod741@gmail.com
+                      </Button>
+                    </a>
+                  </div>
+                  <div className="pt-2">
+                    <div className="text-xs text-muted-foreground mb-2">Try a quick example:</div>
+                    <div className="flex flex-col gap-2">
+                      {presets.map(p => (
+                        <Button key={p.id} variant="ghost" className="justify-start" onClick={() => sendPreset(p.text)}>{p.label}</Button>
+                      ))}
+                    </div>
+                  </div>
                   <Button variant="outline" className="w-full justify-start" size="sm">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Community Forum
