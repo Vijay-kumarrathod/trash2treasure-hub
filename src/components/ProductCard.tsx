@@ -27,7 +27,7 @@ const ProductCard = ({ image, title, price, condition, category }: ProductCardPr
         </div>
         <h3 className="font-semibold line-clamp-2">{title}</h3>
         <div className="flex items-center justify-between">
-          <span className="text-2xl font-bold text-primary">${price}</span>
+          <span className="text-2xl font-bold text-primary">₹{price}</span>
           <Button variant="default" size="sm">View Details</Button>
         </div>
       </div>

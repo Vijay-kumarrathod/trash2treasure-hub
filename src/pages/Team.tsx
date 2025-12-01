@@ -1,68 +1,73 @@
+// src/pages/Team.tsx
+import React from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TeamCard from "@/components/TeamCard";
-import vijayImage from "@/assets/team-vijay.jpg";
-import chandanImage from "@/assets/team-chandan.jpg";
-import lekhanImage from "@/assets/team-lekhana.jpg";
-import veenashreeImage from "@/assets/team-veenashree.jpg";
+
+/**
+ * Safe Team page:
+ * - No local missing image imports
+ * - Uses placeholder images (online) so Vite won't complain
+ * - You can later replace placeholder URLs with real local assets in src/assets
+ */
+
+const team = [
+  {
+    id: 1,
+    name: "Vijaykumar",
+    role: "Frontend Developer",
+    description: "Specializes in creating beautiful and responsive UI.",
+    image: "https://via.placeholder.com/300x300?text=Vijay",
+    technologies: ["React", "TypeScript", "Tailwind CSS"]
+  },
+  {
+    id: 2,
+    name: "Chandan B",
+    role: "Backend Developer",
+    description: "Expert in building scalable server-side applications.",
+    image: "https://via.placeholder.com/300x300?text=Chandan",
+    technologies: ["Node.js", "Express", "Postgres"]
+  },
+  {
+    id: 3,
+    name: "Lekhana",
+    role: "Database & API Specialist",
+    description: "Designs efficient database schemas and implements robust APIs.",
+    image: "https://via.placeholder.com/300x300?text=Lekhana",
+    technologies: ["SQL", "REST API"]
+  },
+  {
+    id: 4,
+    name: "Veenashee",
+    role: "UI/UX Support",
+    description: "Creates intuitive user experiences and visuals.",
+    image: "https://via.placeholder.com/300x300?text=Veenashee",
+    technologies: ["Figma", "UI Design"]
+  }
+];
 
 const Team = () => {
-  const team = [
-    {
-      name: "Vijaykumar",
-      role: "Frontend Developer",
-      description: "Specializes in creating beautiful and responsive user interfaces with modern web technologies.",
-      image: vijayImage,
-      technologies: ["React", "TypeScript", "Tailwind CSS", "Next.js"]
-    },
-    {
-      name: "Chandan B",
-      role: "Backend Developer",
-      description: "Expert in building scalable server-side applications and RESTful APIs.",
-      image: chandanImage,
-      technologies: ["Node.js", "Express", "PostgreSQL", "MongoDB"]
-    },
-    {
-      name: "Lekhana",
-      role: "Database & API Specialist",
-      description: "Designs efficient database schemas and implements robust API architectures.",
-      image: lekhanImage,
-      technologies: ["SQL", "REST API", "GraphQL", "Redis"]
-    },
-    {
-      name: "Veenashree",
-      role: "UI/UX Design Supporter",
-      description: "Creates intuitive user experiences and stunning visual designs that delight users.",
-      image: veenashreeImage,
-      technologies: ["Figma", "Adobe XD", "Sketch", "Prototyping"]
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-dark-bg">
+    <>
       <Navbar />
-      
-      <main className="pt-24 pb-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Meet Our <span className="text-primary">Team</span>
-            </h1>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Talented individuals working together to revolutionize e-waste recycling and make technology more accessible.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-            {team.map((member) => (
-              <TeamCard key={member.name} {...member} />
-            ))}
-          </div>
+      <main className="container mx-auto px-4 py-12">
+        <h2 className="text-3xl font-semibold mb-6 text-center">Meet the Team</h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {team.map((member) => (
+            <TeamCard
+              key={member.id}
+              name={member.name}
+              role={member.role}
+              description={member.description}
+              image={member.image}
+              technologies={member.technologies}
+            />
+          ))}
         </div>
       </main>
-
       <Footer />
-    </div>
+    </>
   );
 };
 
