@@ -25,6 +25,10 @@ const ProductCard = ({ image, title, price, condition, category, description, id
         />
       </div>
       <div className="p-4 space-y-3">
+        {/** if the product is not synced to server, show a small badge */}
+        { (id && String(id).startsWith('local')) && (
+          <div className="mb-2"><Badge variant="destructive" className="text-xs">Offline</Badge></div>
+        )}
         <div className="flex gap-2">
           <Badge variant="secondary" className="text-xs">{category}</Badge>
           <Badge variant="outline" className="text-xs border-primary text-primary">{condition}</Badge>

@@ -5,9 +5,62 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { toast } from "@/components/ui/sonner";
+import { useState } from "react";
 import { Phone, Mail, MapPin, Clock, ExternalLink } from "lucide-react";
 
 const Contact = () => {
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [category, setCategory] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !email || !message) {
+      toast.error("Please fill in name, email and message");
+      return;
+    }
+
+    try {
+      console.log('Contact submit to', `${API_BASE}/contact`);
+      const res = await fetch(`${API_BASE}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, subject, category, message }),
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => '');
+        // If the server returned HTML with 'Cannot POST /contact', offer guidance
+        if (/Cannot POST \/contact/.test(txt)) {
+          toast.error('Failed to send message: server did not accept POST on /contact. Did you start the backend on port 5000?');
+        } else {
+          toast.error('Failed to send message: ' + (txt || res.status));
+        }
+        return;
+      }
+      const json = await res.json().catch(() => null);
+      if (json && json.success) {
+        toast.success('Message sent - we will contact you soon');
+        setName(''); setEmail(''); setSubject(''); setCategory(''); setMessage('');
+        try { window.dispatchEvent(new Event('items-updated')); } catch(e){}
+        // Check server health / SMTP state and advise if email was sent
+        try {
+          const h = await fetch(`${API_BASE}/health`).then((r) => r.json());
+          if (!h.smtpConfigured) {
+            toast('Note: Email notifications are not configured on the server (messages are stored, but not emailed).');
+          }
+        } catch (e) {}
+      } else {
+        toast.error('Message send failed');
+      }
+    } catch (e) {
+      toast.error('Failed to send message: ' + String(e));
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -20,28 +73,28 @@ const Contact = () => {
             {/* Contact Form */}
             <div className="lg:col-span-2">
               <Card className="p-6 shadow-card">
-                <form className="space-y-6">
+                <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium mb-2 block">Full Name</label>
-                      <Input placeholder="John Doe" />
+                      <Input placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
                     
                     <div>
                       <label className="text-sm font-medium mb-2 block">Email</label>
-                      <Input type="email" placeholder="john@example.com" />
+                      <Input type="email" placeholder="john@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium mb-2 block">Subject</label>
-                      <Input placeholder="How can we help?" />
+                      <Input placeholder="How can we help?" value={subject} onChange={(e) => setSubject(e.target.value)} />
                     </div>
                     
                     <div>
                       <label className="text-sm font-medium mb-2 block">Category</label>
-                      <Select>
+                      <Select value={category} onValueChange={(v) => setCategory(v)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
@@ -60,10 +113,12 @@ const Contact = () => {
                     <Textarea 
                       placeholder="Tell us more about your inquiry..."
                       rows={6}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
                     />
                   </div>
                   
-                  <Button variant="hero" size="lg" className="w-full">
+                  <Button variant="hero" size="lg" className="w-full" type="submit">
                     Send Message
                   </Button>
                 </form>

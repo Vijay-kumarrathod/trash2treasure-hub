@@ -19,7 +19,8 @@ const Login = () => {
       try {
         const anon = localStorage.getItem('help.sessionId');
         if (anon && user.contact) {
-          fetch('http://localhost:5000/api/chat/session-associate', {
+          const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+          fetch(`${API_BASE}/api/chat/session-associate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionId: anon, userId: user.contact }),

@@ -1,0 +1,40 @@
+{
+  "s-1764609952474-3saji0": [
+    {
+      "role": "assistant",
+      "content": "Hello! How can I help you today?"
+    },
+    {
+      "role": "user",
+      "content": "I requested a refund. How long will it take and what are the next steps?"
+    },
+    {
+      "role": "assistant",
+      "content": "Thank you. For immediate help call +91 6363325638 or email Vijaykumarrathod741@gmail.com"
+    },
+    {
+      "role": "user",
+      "content": "hi"
+    },
+    {
+      "role": "assistant",
+      "content": "Thank you for your message. Our support team will assist you shortly. If you need immediate help, you can call +91 6363325638 or email Vijaykumarrathod741@gmail.com"
+    },
+    {
+      "role": "user",
+      "content": "I want to contact the owner about a listing. Provide the best way to contact them."
+    },
+    {
+      "role": "assistant",
+      "content": "Thank you for your message. Our support team will assist you shortly. For immediate help call +91 6363325638 or email Vijaykumarrathod741@gmail.com"
+    },
+    {
+      "role": "user",
+      "content": "I want to contact the owner about a listing. Provide the best way to contact them."
+    },
+    {
+      "role": "assistant",
+      "content": "Thank you for your message. Our support team will assist you shortly. For immediate help call +91 6363325638 or email Vijaykumarrathod741@gmail.com"
+    }
+  ]
+}

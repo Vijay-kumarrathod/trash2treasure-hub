@@ -249,6 +249,7 @@ function writeChatSessions(sessions) {
 // Upload route: accept multiple images under field `images` and metadata fields
 app.post("/upload", upload.array("images", 5), (req, res) => {
   try {
+    console.log('POST /upload request from', req.ip, 'files=', (req.files || []).length);
     const files = req.files || (req.file ? [req.file] : []);
     const images = files.map((f) => `/uploads/${f.filename}`);
 
@@ -287,6 +288,38 @@ app.post("/upload", upload.array("images", 5), (req, res) => {
   }
 });
 
+// Allow JSON-only item creation (useful for offline re-sync from local data)
+app.post("/items", (req, res) => {
+  try {
+    console.log('POST /items request from', req.ip, 'body keys:', Object.keys(req.body || {}));
+    const { title = "Untitled", description = "", price = "", category = "", condition = "", location = "", sellerName = "", sellerContact = "", images = [] } = req.body || {};
+    const items = readItems();
+    const newItem = {
+      id: Date.now().toString(),
+      title,
+      description,
+      price,
+      category,
+      condition,
+      location,
+      sellerName,
+      sellerContact,
+      images: images.map((p) => (p.startsWith("http") ? p : `/uploads/${p}`)),
+      createdAt: new Date().toISOString(),
+    };
+    items.unshift(newItem);
+    writeItems(items);
+    // return full URLs for convenience
+    const host = req.headers.host || `localhost:5000`;
+    const base = req.protocol ? `${req.protocol}://${host}` : `http://${host}`;
+    newItem.images = (newItem.images || []).map((p) => (p.startsWith("http") ? p : `${base}${p}`));
+    res.status(201).json({ success: true, item: newItem });
+  } catch (e) {
+    console.error('POST /items error', e);
+    res.status(500).json({ success: false, error: String(e) });
+  }
+});
+
 // Serve uploaded images
 
 app.use("/uploads", express.static(uploadFolder));
@@ -294,6 +327,7 @@ app.use("/uploads", express.static(uploadFolder));
 // GET items
 app.get("/items", (req, res) => {
   try {
+    console.log('GET /items request from', req.ip);
     const items = readItems();
     // ensure image URLs are absolute
     const host = req.headers.host || `localhost:5000`;
@@ -431,6 +465,44 @@ app.get('/notifications', (req, res) => {
   }
 });
 
+// Accept contact form submissions
+app.post('/contact', (req, res) => {
+  try {
+    console.log('POST /contact request from', req.ip, 'body keys:', Object.keys(req.body || {}));
+    const { name = '', email = '', subject = '', category = '', message = '' } = req.body || {};
+    const nots = readNotifications();
+    const entry = { id: Date.now().toString(), createdAt: new Date().toISOString(), name, email, subject, category, message };
+    nots.unshift(entry);
+    writeNotifications(nots);
+
+    // Optionally send a notification to members by SMS/email
+    try {
+      notifyMembers({ id: entry.id, title: subject || `Contact from ${name}`, price: '', description: message }).catch((e) => console.error('notifyMembers error', e));
+    } catch (e) {
+      // ignore
+    }
+
+    res.json({ success: true, entry });
+  } catch (e) {
+    console.error('Contact submit error', e);
+    res.status(500).json({ success: false, error: String(e) });
+  }
+});
+
+// Health check endpoint for diagnostics
+app.get('/health', (req, res) => {
+  try {
+    console.log('GET /health request from', req.ip);
+    const SMTP_HOST = process.env.SMTP_HOST;
+    const SMTP_USER = process.env.SMTP_USER;
+    const SMTP_PASS = process.env.SMTP_PASS;
+    const smtpConfigured = Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS && nodemailer);
+    res.json({ ok: true, time: new Date().toISOString(), items: readItems().length, smtpConfigured });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e) });
+  }
+});
+
 // One-off SMS send for testing: POST { to, body }
 app.post('/send-sms', async (req, res) => {
   const { to, body: smsBody } = req.body || {};
@@ -563,6 +635,24 @@ app.get('/admin/notifications/download', (req, res) => {
     res.send(JSON.stringify(nots, null, 2));
   }catch(e){
     res.status(500).json({ error: 'failed to read notifications' });
+  }
+});
+
+// Re-send a notification by id (admin convenience)
+app.post('/admin/notifications/:id/resend', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const nots = readNotifications();
+    const note = nots.find((n) => String(n.id) === String(id));
+    if (!note) return res.status(404).json({ error: 'notification not found' });
+
+    // Reuse notifyMembers for sending; construct a pseudo item
+    const item = { id: note.id, title: note.subject || `Contact: ${note.name}`, price: '', description: note.message || '' };
+    const results = await notifyMembers(item).catch((e) => ({ error: String(e) }));
+    return res.json({ success: true, results });
+  } catch (e) {
+    console.error('Resend notification error', e);
+    res.status(500).json({ success: false, error: String(e) });
   }
 });
 

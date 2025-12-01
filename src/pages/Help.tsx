@@ -45,7 +45,8 @@ const Help = () => {
     setInputMessage("");
     setIsTyping(true);
     try {
-      const res = await fetch("http://localhost:5000/api/chat", {
+      const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const res = await fetch(`${API_BASE}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: next, userId: sessionId }),
@@ -77,7 +78,8 @@ const Help = () => {
   useEffect(() => {
     const loadSession = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/chat/session/${sessionId}`);
+        const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+        const res = await fetch(`${API_BASE}/api/chat/session/${sessionId}`);
         if (res.ok) {
           const json = await res.json();
           const srv = json.messages || [];
@@ -107,7 +109,8 @@ const Help = () => {
     const apiMessages = next.map((m: any) => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text }));
 
     try {
-      const res = await fetch('http://localhost:5000/api/chat', {
+      const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const res = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: apiMessages, userId: sessionId }),

@@ -1,0 +1,224 @@
+[
+  {
+    "createdAt": "2025-12-01T18:11:33.912Z",
+    "itemId": "1764612693910",
+    "message": "New listing: itjjf - ₹1011 - http://localhost:5000/product/1764612693910",
+    "results": [
+      {
+        "to": "+916363325638",
+        "info": "simulated"
+      },
+      {
+        "to": "+919686133711",
+        "info": "simulated"
+      },
+      {
+        "to": "+917019732659",
+        "info": "simulated"
+      },
+      {
+        "to": "+918217702676",
+        "info": "simulated"
+      },
+      {
+        "emailResults": [
+          {
+            "to": "Vijaykumarrathod741@gmail.com",
+            "info": "simulated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "createdAt": "2025-12-01T18:01:04.558Z",
+    "itemId": "1764612064554",
+    "message": "New listing: bbhjb - ₹ - http://localhost:5000/product/1764612064554",
+    "results": [
+      {
+        "to": "+916363325638",
+        "info": "simulated"
+      },
+      {
+        "to": "+919686133711",
+        "info": "simulated"
+      },
+      {
+        "to": "+917019732659",
+        "info": "simulated"
+      },
+      {
+        "to": "+918217702676",
+        "info": "simulated"
+      },
+      {
+        "emailResults": [
+          {
+            "to": "Vijaykumarrathod741@gmail.com",
+            "info": "simulated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1764612064554",
+    "createdAt": "2025-12-01T18:01:04.554Z",
+    "name": "vijay",
+    "email": "Vijaykumarrathod741@gmail.com",
+    "subject": "bbhjb",
+    "category": "support",
+    "message": "bkjghgg"
+  },
+  {
+    "createdAt": "2025-12-01T18:00:22.726Z",
+    "itemId": "1764612022723",
+    "message": "New listing: hbhvh - ₹ - http://localhost:5000/product/1764612022723",
+    "results": [
+      {
+        "to": "+916363325638",
+        "info": "simulated"
+      },
+      {
+        "to": "+919686133711",
+        "info": "simulated"
+      },
+      {
+        "to": "+917019732659",
+        "info": "simulated"
+      },
+      {
+        "to": "+918217702676",
+        "info": "simulated"
+      },
+      {
+        "emailResults": [
+          {
+            "to": "Vijaykumarrathod741@gmail.com",
+            "info": "simulated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1764612022723",
+    "createdAt": "2025-12-01T18:00:22.723Z",
+    "name": "vijay",
+    "email": "Vijaykumarrathod741@gmail.com",
+    "subject": "hbhvh",
+    "category": "sales",
+    "message": "kjihfufut"
+  },
+  {
+    "createdAt": "2025-12-01T17:58:23.101Z",
+    "itemId": "1764611903096",
+    "message": "New listing: hghgfgf - ₹ - http://localhost:5000/product/1764611903096",
+    "results": [
+      {
+        "to": "+916363325638",
+        "info": "simulated"
+      },
+      {
+        "to": "+919686133711",
+        "info": "simulated"
+      },
+      {
+        "to": "+917019732659",
+        "info": "simulated"
+      },
+      {
+        "to": "+918217702676",
+        "info": "simulated"
+      },
+      {
+        "emailResults": [
+          {
+            "to": "Vijaykumarrathod741@gmail.com",
+            "info": "simulated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1764611903096",
+    "createdAt": "2025-12-01T17:58:23.096Z",
+    "name": "vijay",
+    "email": "Vijaykumarrathod741@gmail.com",
+    "subject": "hghgfgf",
+    "category": "support",
+    "message": "yhgh"
+  },
+  {
+    "createdAt": "2025-12-01T17:51:32.454Z",
+    "itemId": "1764611492449",
+    "message": "New listing: ssc - ₹ - http://localhost:5000/product/1764611492449",
+    "results": [
+      {
+        "to": "+916363325638",
+        "info": "simulated"
+      },
+      {
+        "to": "+919686133711",
+        "info": "simulated"
+      },
+      {
+        "to": "+917019732659",
+        "info": "simulated"
+      },
+      {
+        "to": "+918217702676",
+        "info": "simulated"
+      },
+      {
+        "emailResults": [
+          {
+            "to": "Vijaykumarrathod741@gmail.com",
+            "info": "simulated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1764611492449",
+    "createdAt": "2025-12-01T17:51:32.449Z",
+    "name": "bvahgd",
+    "email": "Vijaykumarrathod741@gmail.com",
+    "subject": "ssc",
+    "category": "sales",
+    "message": "scsc"
+  },
+  {
+    "createdAt": "2025-12-01T17:34:47.823Z",
+    "itemId": "1764610487820",
+    "message": "New listing: hh - ₹100 - http://localhost:5000/product/1764610487820",
+    "results": [
+      {
+        "to": "+916363325638",
+        "info": "simulated"
+      },
+      {
+        "to": "+919686133711",
+        "info": "simulated"
+      },
+      {
+        "to": "+917019732659",
+        "info": "simulated"
+      },
+      {
+        "to": "+918217702676",
+        "info": "simulated"
+      },
+      {
+        "emailResults": [
+          {
+            "to": "Vijaykumarrathod741@gmail.com",
+            "info": "simulated"
+          }
+        ]
+      }
+    ]
+  }
+]

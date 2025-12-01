@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/sonner";
 import phoneImage from "@/assets/product-phone.jpg";
 
 const ProductDetail = () => {
@@ -16,6 +18,7 @@ const ProductDetail = () => {
   const [buyerContact, setBuyerContact] = useState("");
   const [buyerMessage, setBuyerMessage] = useState("");
 
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
   useEffect(() => {
     const load = async () => {
       // try localStorage first
@@ -30,12 +33,12 @@ const ProductDetail = () => {
       const found = items.find((it) => String(it.id) === String(id));
       if (found) {
         setItem(found);
-        return;
+        // continue and try server refresh if available (to get latest data)
       }
 
       // try fetching from server /items if available
       try {
-        const res = await fetch("http://localhost:5000/items");
+        const res = await fetch(`${API_BASE}/items`);
         if (res.ok) {
           const json = await res.json();
           const fromServer = (json.items || []).find((it: any) => String(it.id) === String(id));
@@ -81,9 +84,9 @@ const ProductDetail = () => {
       const body = encodeURIComponent((buyerMessage || `Hi ${item.sellerName || ''}, I am interested in your ${item.title}.`) + `\n\nContact: ${buyerContact}\nName: ${buyerName}`);
       window.location.href = `mailto:${sellerContact}?subject=${subject}&body=${body}`;
     } else if (sellerContact) {
-      alert(`Please contact seller at: ${sellerContact}`);
+      toast('Please contact seller at: ' + sellerContact);
     } else {
-      alert("Seller contact not available");
+      toast('Seller contact not available');
     }
 
     setShowBuyModal(false);
@@ -94,8 +97,12 @@ const ProductDetail = () => {
     if (!confirm("Delete this item?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/items/${item.id}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sellerContact: item.sellerContact }) });
-      if (res.ok) {
+      // Some servers or proxies don't like bodies on DELETE requests; avoid sending a body.
+      const res = await fetch(`${API_BASE}/items/${item.id}`, { method: "DELETE" });
+      // Prefer JSON body parse when possible; also treat 404 as success for local-only items.
+      const isJson = (res.headers.get("content-type") || "").includes("application/json");
+      const data = isJson ? await res.json().catch(() => null) : null;
+      if (res.ok || res.status === 404 || (data && data.success)) {
         // remove from localStorage
         try {
           const raw = localStorage.getItem("items");
@@ -103,14 +110,17 @@ const ProductDetail = () => {
           items = items.filter((it: any) => String(it.id) !== String(item.id));
           localStorage.setItem("items", JSON.stringify(items));
         } catch (e) {}
+        toast.success('Item deleted');
+        try { window.dispatchEvent(new Event('items-updated')); } catch (e) {}
         navigate("/browse");
         return;
       }
-      const text = await res.text();
-      alert("Delete failed: " + text);
+      // Try to show a helpful message from JSON or text
+      const text = data && data.error ? data.error : (await res.text().catch(() => ""));
+      toast.error("Delete failed: " + (text || `Server returned ${res.status}`));
     } catch (e) {
       console.error(e);
-      alert("Delete request failed");
+      toast.error("Delete request failed");
     }
   };
 
@@ -130,6 +140,8 @@ const ProductDetail = () => {
     );
   }
 
+  const canDelete = currentUser && (String(currentUser.contact || "") === String(item?.sellerContact || "") || String(currentUser.name || "") === String(item?.sellerName || ""));
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -138,7 +150,12 @@ const ProductDetail = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <div className="bg-card rounded shadow-card p-6">
-                <h1 className="text-3xl font-bold mb-4">{item.title}</h1>
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-3xl font-bold">{item.title}</h1>
+                  {!item.synced && (
+                    <Badge variant="destructive" className="text-xs">Offline</Badge>
+                  )}
+                </div>
                 <div className="aspect-video bg-muted mb-4">
                   <img src={item.images?.[0] ?? phoneImage} alt={item.title} className="w-full h-full object-cover" />
                 </div>
@@ -183,9 +200,11 @@ const ProductDetail = () => {
                 <p><strong>Posted:</strong> {new Date(item.createdAt || Date.now()).toLocaleString()}</p>
               </div>
 
-              <div className="bg-card rounded shadow-card p-6">
-                <Button variant="destructive" onClick={handleDelete}>Delete Item</Button>
-              </div>
+              {canDelete && (
+                <div className="bg-card rounded shadow-card p-6">
+                  <Button variant="destructive" onClick={handleDelete}>Delete Item</Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

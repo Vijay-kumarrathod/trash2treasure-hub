@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card } from "@/components/ui/card";
 import { Camera, MapPin, Lightbulb, Bell } from "lucide-react";
 import { useState, useEffect } from "react";
+import { toast } from "@/components/ui/sonner";
 import { useNavigate } from "react-router-dom";
 
 const Sell = () => {
@@ -41,7 +42,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   if (!selected) return;
   // limit to 5
   if (selected.length > 5) {
-    alert("Please select up to 5 images");
+    toast.error("Please select up to 5 images");
     return;
   }
   setFiles(selected);
@@ -58,7 +59,13 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     return urls;
   });
 };
-const handleSubmit = async () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
   const formData = new FormData();
   if (files) Array.from(files).forEach((f) => formData.append("images", f));
   formData.append("title", title);
@@ -70,27 +77,69 @@ const handleSubmit = async () => {
   // include seller info
   if (sellerName) formData.append("sellerName", sellerName);
   if (sellerContact) formData.append("sellerContact", sellerContact);
-  const res = await fetch("http://localhost:5000/upload", {
-    method: "POST",
-    body: formData,
-  });
-
-  const data = await res.json();
+  let data: any = null;
+  try {
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: "POST",
+      body: formData,
+    });
+    data = await res.json().catch(() => null);
+    if (!res.ok) {
+      const msg = (data && data.error) || `Server returned ${res.status}`;
+      toast.error(msg);
+      setIsSubmitting(false);
+      return;
+    }
+  } catch (e) {
+    const err = String(e);
+    toast.error("Upload failed (server unreachable): " + err + ". Saved locally.");
+    // Build a local item fallback and persist it to localStorage with synced=false
+    try {
+      const raw = localStorage.getItem("items");
+      const items = raw ? JSON.parse(raw) : [];
+      const fallbackItem: any = {
+        id: 'local-' + Date.now().toString(),
+        title,
+        description,
+        price,
+        category,
+        condition,
+        location,
+        sellerName,
+        sellerContact,
+        images: previewUrls, // these are object URLs but useful for immediate UX
+        createdAt: new Date().toISOString(),
+        synced: false,
+      };
+      items.unshift(fallbackItem);
+      localStorage.setItem("items", JSON.stringify(items));
+      // notify the app to update Browse UI
+      try { window.dispatchEvent(new Event('items-updated')); } catch (e) {}
+    } catch (e) {}
+    setIsSubmitting(false);
+    return;
+  }
   console.log("uploaded:", data);
   if (data?.success) {
-    alert("Product listed successfully");
+    toast.success("Product listed successfully");
     // refresh local items cache so Browse shows it
     try {
       const raw = localStorage.getItem("items");
       const items = raw ? JSON.parse(raw) : [];
-      items.unshift(data.item);
+      const serverItem = { ...data.item, synced: true };
+      items.unshift(serverItem);
       localStorage.setItem("items", JSON.stringify(items));
     } catch (e) {}
-    // navigate to browse to show the new item
-    window.location.href = "/browse";
+    // notify other parts of the SPA that items were updated
+    try { window.dispatchEvent(new Event('items-updated')); } catch (e) {}
+    // navigate to the product page to see the newly created listing
+    setIsSubmitting(false);
+    navigate(`/product/${data.item.id}`);
   } else {
-    alert("Upload failed");
+    const msg = data && data.error ? data.error : "Upload failed";
+    toast.error(msg);
   }
+  setIsSubmitting(false);
 };
 
 useEffect(() => {
@@ -220,9 +269,11 @@ useEffect(() => {
                    variant="hero"
                    size="lg"
                    className="w-full"
+                   type="button"
                    onClick={handleSubmit}
+                   disabled={isSubmitting}
                   >
-                   List Product
+                   {isSubmitting ? 'Listing...' : 'List Product'}
                   </Button>
                 </form>
               </Card>
