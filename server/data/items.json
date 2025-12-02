@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "id": "1764654863726",
+    "title": "vy",
+    "description": "hhhvgv",
+    "price": "500",
+    "category": "laptops",
+    "condition": "excellent",
+    "location": "bnglr",
+    "sellerName": "bvih",
+    "sellerContact": "vijaykumarratthod741@gmail.com",
+    "images": [
+      "/uploads/1764654863702-Screenshot 2025-10-15 172204.png"
+    ],
+    "createdAt": "2025-12-02T05:54:23.726Z"
+  }
+]
